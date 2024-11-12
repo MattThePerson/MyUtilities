@@ -18,6 +18,8 @@ class BookmarksGetter:
 
     @classmethod
     def get_bookmarks(cls, browser, foldername=None, domain=None, sortby=None, reverse=False):
+        if domain and not isinstance(domain, list):
+            domain = [domain]
         bookmarks_path = next( (pth for pth in cls.default_bookmarks_paths if (browser.lower() in pth.lower() )) , None)
         if bookmarks_path == None:
             print('Cannot find bookmarks for browser named "{}"'.format(browser))
@@ -30,10 +32,16 @@ class BookmarksGetter:
         else:
             print('ERROR: "{}" is in an unknown browser family'.format(browser))
             return []
-        bookmarks = [ b for b in bookmarks if (foldername==None or foldername in b.get('location')) ]
-        bookmarks = [ b for b in bookmarks if (domain==None or domain.lower() in b.get('url').lower()) ]
-        if sortby:
-            bookmarks.sort( key=lambda bk: bk.get(sortby), reverse=reverse )
+        bookmarks = [ b for b in bookmarks if (foldername==None or foldername.lower() in b.get('location').lower().split('/')) ]
+        bookmarks = [ b for b in bookmarks if ( domain==None or 0 != len([dom for dom in domain if dom.lower() in b.get('url').lower()]) ) ]# domain.lower() in b.get('url').lower()) ]
+        for bm in bookmarks: bm['location_relative'] = cls.get_relative_location(bm['location'], foldername)
+        if sortby and bookmarks != []:
+            if sortby not in bookmarks[0].keys():
+                raise Exception('ERROR in BookmarksGetter: No such key "{}"'.format(sortby))
+            else:
+                bookmarks.sort( key=lambda bk: bk.get(sortby), reverse=reverse )
+        else:
+            bookmarks.sort( key=lambda bk: bk.get('date_added'), reverse=reverse )
         return bookmarks
 
     @classmethod
@@ -61,7 +69,15 @@ class BookmarksGetter:
 
 
     ### HELPER METHODS
-    @classmethod
-    def windows_epoch_readable(cls, us):
+    @staticmethod
+    def windows_epoch_readable(us):
         windows_epoch_start = datetime.datetime(1601, 1, 1)
         return str(windows_epoch_start + datetime.timedelta(microseconds=int(us)))
+    
+    @staticmethod
+    def get_relative_location(location, foldername):
+        if foldername == None:
+            return location
+        if location == foldername:
+            return ''
+        return location.replace(f'{foldername}/', '')

@@ -27,8 +27,8 @@ class StringParser:
     def sort_formats(cls):
         cls.formats = sorted(cls.formats, reverse=True, key=lambda fmt: len(fmt))
 
-    @staticmethod
-    def parse(str):
+    @classmethod
+    def parse(cls, str):
         if StringParser.formats == None:
             raise Exception('No format(s) given to the Parser')
         for f in StringParser.formats:
@@ -37,11 +37,12 @@ class StringParser:
                 return parsed_data.named
         return None
     
-    @staticmethod
-    def format(data):
+    @classmethod
+    def format(cls, data):
+        data = cls.prune_data(data)
         if StringParser.formats == None:
             raise Exception('No format(s) given to the Parser')
-        for f in reversed(StringParser.formats):
+        for f in StringParser.formats:
             try:
                 str = f.format(**data)
                 return str
@@ -73,6 +74,13 @@ class StringParser:
         for c in '.-_':
             str = str.replace(c, '')
         return str.isnumeric()
+    
+    @staticmethod
+    def prune_data(data):
+        remove_keys = [ k for k, v in data.items() if v == None ]
+        for k in remove_keys:
+            del data[k]
+        return data
 
 
 

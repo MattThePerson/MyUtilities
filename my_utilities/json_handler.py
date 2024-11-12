@@ -1,6 +1,11 @@
 # Changes
 # 2024-06-18
 # - tweaked appendValue()
+# 
+# TODO:
+# - add removeKey() functionality
+# - [REVISE] simplity method names
+# - [REVISE] Extend dict functinality, handler[key] = value, del handler[key], key in handler, len(handler)
 import json
 import os
 import shutil
