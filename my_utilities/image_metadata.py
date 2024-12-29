@@ -2,6 +2,8 @@ from PIL import Image, PngImagePlugin
 import piexif
 import json
 
+__all__ = ['ImageMetadata_WriteJson', 'ImageMetadata_ReadJson', 'ImageMetadata_Remove']
+
 
 def ImageMetadata_WriteJson(img: str, metadata: dict) -> None:
     '''Writes metadata in a json format to the metadata description of an image. 
@@ -42,6 +44,7 @@ def ImageMetadata_ReadJson(img: str) -> dict | None:
         return None
 
 def ImageMetadata_Remove(img: str):
+    '''Removes description attribute from image metadata. Handles jpg in png separately.'''
     ext = img.split('.')[-1].lower()
     if ext in ['jpg', 'jpeg']:
         remove_description_jpg(img)
